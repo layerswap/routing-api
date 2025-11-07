@@ -15,6 +15,7 @@ import {
 import { AWSError, DynamoDB, Lambda } from 'aws-sdk'
 import { ChainId, Currency, CurrencyAmount, Fraction, Token, TradeType } from '@uniswap/sdk-core'
 import { Protocol } from '@uniswap/router-sdk'
+import { SwapOptions } from '@uniswap/smart-order-router'
 import { PairTradeTypeChainId } from './model/pair-trade-type-chain-id'
 import { CachedRoutesMarshaller } from '../../marshalling/cached-routes-marshaller'
 import { PromiseResult } from 'aws-sdk/lib/request'
@@ -99,6 +100,7 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
    * @param currentBlockNumber
    * @param optimistic
    * @param alphaRouterConfig
+   * @param swapOptions
    * @protected
    */
   protected override async _getCachedRoute(
@@ -109,7 +111,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
     protocols: Protocol[],
     currentBlockNumber: number,
     optimistic: boolean,
-    alphaRouterConfig?: AlphaRouterConfig
+    alphaRouterConfig?: AlphaRouterConfig,
+    swapOptions?: SwapOptions
   ): Promise<CachedRoutes | undefined> {
     const { currencyIn, currencyOut } = this.determineCurrencyInOut(amount, quoteCurrency, tradeType)
 
@@ -197,7 +200,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
           partitionKey,
           amount,
           protocols,
-          alphaRouterConfig
+          alphaRouterConfig,
+          swapOptions
         )
       } else {
         metric.putMetric('RoutesDbEntriesNotFound', 1, MetricLoggerUnit.Count)
@@ -219,7 +223,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
     partitionKey: PairTradeTypeChainId,
     amount: CurrencyAmount<Currency>,
     protocols: Protocol[],
-    alphaRouterConfig?: AlphaRouterConfig
+    alphaRouterConfig?: AlphaRouterConfig,
+    swapOptions?: SwapOptions
   ): CachedRoutes {
     metric.putMetric(`RoutesDbEntriesFound`, result.Items!.length, MetricLoggerUnit.Count)
     const cachedRoutesArr: CachedRoutes[] = result.Items!.map((record) => {
@@ -353,7 +358,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
         amount,
         currentBlockNumber,
         cachedRoutes.routes.map((route) => route.routeId),
-        alphaRouterConfig
+        alphaRouterConfig,
+        swapOptions
       )
     }
 
@@ -365,7 +371,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
     amount: CurrencyAmount<Currency>,
     currentBlockNumber: number,
     cachedRoutesRouteIds: number[],
-    alphaRouterConfig?: AlphaRouterConfig
+    alphaRouterConfig?: AlphaRouterConfig,
+    swapOptions?: SwapOptions
   ): Promise<void> {
     try {
       const queryParams = {
@@ -406,7 +413,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
           [Protocol.V2, Protocol.V3, Protocol.V4, Protocol.MIXED],
           amount,
           cachedRoutesRouteIds,
-          alphaRouterConfig
+          alphaRouterConfig,
+          swapOptions
         )
         this.setRoutesDbCachingIntentFlag(partitionKey, amount, currentBlockNumber)
       } else {
@@ -422,7 +430,8 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
     protocols: Protocol[],
     amount: CurrencyAmount<Currency>,
     cachedRoutesRouteIds: number[],
-    alphaRouterConfig?: AlphaRouterConfig
+    alphaRouterConfig?: AlphaRouterConfig,
+    swapOptions?: SwapOptions
   ): void {
     const payload = {
       headers: {
@@ -442,6 +451,12 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
         requestSource: 'routing-api',
         cachedRoutesRouteIds: serializeRouteIds(cachedRoutesRouteIds),
         enableDebug: alphaRouterConfig?.enableDebug,
+        swapOptions: swapOptions?.simulate?.fromAddress,
+        enableUniversalRouter: true,
+        // note we are still inside sync call, so we need to pass the requestId to the async call
+        // requestId is from upstream TAPI
+        // then we can correlate the async request with the sync request
+        asyncRequestId: alphaRouterConfig?.requestId,
       },
     }
 
@@ -545,6 +560,73 @@ export class DynamoRouteCachingProvider extends IRouteCachingProvider {
       }
     } else {
       log.warn(`[DynamoRouteCachingProvider] No Route Entries to insert`)
+      return false
+    }
+  }
+
+  /**
+   * Implementation of the abstract method defined in `IRouteCachingProvider`
+   * Deletes the cached routes for the given chainId, amount, quoteCurrency, tradeType, protocols, blockNumber
+   *
+   * @param chainId
+   * @param amount
+   * @param quoteCurrency
+   * @param tradeType
+   * @param protocols
+   * @param blockNumber
+   * @param alphaRouterConfig
+   * @param swapOptions
+   * @returns
+   */
+  protected async _deleteCachedRoute(cachedRoutes: CachedRoutes): Promise<boolean> {
+    if (cachedRoutes.routes.length === 0) {
+      log.warn(`[DynamoRouteCachingProvider] No routes to delete for ${cachedRoutes.toString()}`)
+      return false
+    }
+
+    const partitionKey = PairTradeTypeChainId.fromCachedRoutes(cachedRoutes)
+    const deleteRequests = cachedRoutes.routes.map((route) => ({
+      DeleteRequest: {
+        Key: {
+          pairTradeTypeChainId: partitionKey.toString(),
+          routeId: route.routeId,
+        },
+      },
+    }))
+
+    if (deleteRequests.length === 0) {
+      log.warn(`[DynamoRouteCachingProvider] No routes to delete for ${partitionKey.toString()}`)
+      return false
+    }
+
+    try {
+      // DynamoDB batchWrite supports max 25 items per call
+      const BATCH_SIZE = 25
+      for (let i = 0; i < deleteRequests.length; i += BATCH_SIZE) {
+        const batch = deleteRequests.slice(i, i + BATCH_SIZE)
+        const params = {
+          RequestItems: {
+            [this.routesTableName]: batch,
+          },
+        }
+        const response = await this.ddbClient.batchWrite(params).promise()
+
+        if (response.UnprocessedItems && Object.keys(response.UnprocessedItems).length > 0) {
+          log.warn(
+            `[DynamoRouteCachingProvider] Unprocessed items during delete for ${partitionKey.toString()}`,
+            response.UnprocessedItems
+          )
+          // Optionally retry unprocessed items here
+        }
+      }
+
+      log.info(`[DynamoRouteCachingProvider] Deleted ${deleteRequests.length} route(s) for ${partitionKey.toString()}`)
+      return true
+    } catch (error) {
+      log.error(
+        { error, partitionKey: partitionKey.toString() },
+        `[DynamoRouteCachingProvider] Failed to delete cached routes`
+      )
       return false
     }
   }

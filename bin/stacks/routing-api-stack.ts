@@ -10,7 +10,36 @@ import { RoutingDashboardStack } from './routing-dashboard-stack'
 import { RoutingLambdaStack } from './routing-lambda-stack'
 import { RoutingDatabaseStack } from './routing-database-stack'
 import { RpcGatewayDashboardStack } from './rpc-gateway-dashboard'
+import { REQUEST_SOURCES } from '../../lib/util/requestSources'
+import { TESTNETS } from '../../lib/util/testNets'
 import { RpcGatewayFallbackStack } from './rpc-gateway-fallback-stack'
+import { chainProtocols } from '../../lib/cron/cache-config'
+
+export const CHAINS_NOT_MONITORED: ChainId[] = TESTNETS
+export const REQUEST_SOURCES_NOT_MONITORED = ['unknown']
+
+// For low volume chains, we'll increase the evaluation periods to reduce triggering sensitivity.
+export const LOW_VOLUME_CHAINS: Set<ChainId> = new Set([
+  ChainId.CELO,
+  ChainId.ZORA,
+  ChainId.BLAST,
+  ChainId.ZKSYNC,
+  ChainId.SONEIUM,
+  ChainId.AVALANCHE,
+  ChainId.WORLDCHAIN,
+])
+
+// For low volume request sources, we'll increase the evaluation periods to reduce triggering sensitivity.
+export const LOW_VOLUME_REQUEST_SOURCES: Set<string> = new Set(['uniswap-extension', 'uniswap-android', 'uniswap-ios'])
+
+// For low volume chains, we'll increase the evaluation periods to reduce triggering sensitivity (5 mins periods).
+export const LOW_VOLUME_EVALUATION_PERIODS = 10
+export const HIGH_VOLUME_EVALUATION_PERIODS = 2
+
+// Pool count anomaly detection configuration
+export const POOL_COUNT_DEVIATION_ALERT_THRESHOLD = 0.05 // 5% deviation threshold
+export const POOL_COUNT_EVALUATION_WINDOW_HOURS = 3 // 3-hour evaluation window for baseline compared to last 1 hour
+export const POOL_COUNT_MINIMUM_VALUE_FOR_ANOMALY_DETECTION = 500 // Minimum value for pool count to trigger anomaly detection
 
 export class RoutingAPIStack extends cdk.Stack {
   public readonly url: CfnOutput
@@ -38,6 +67,8 @@ export class RoutingAPIStack extends cdk.Stack {
       alchemyQueryKey?: string
       alchemyQueryKey2?: string
       theGraphApiKey?: string
+      graphBaseV4SubgraphId?: string
+      graphBearerToken?: string
       uniGraphQLEndpoint: string
       uniGraphQLHeaderOrigin: string
       useExplicitResourceNames?: boolean // Set to false for staging to auto-generate unique names
@@ -64,6 +95,8 @@ export class RoutingAPIStack extends cdk.Stack {
       unicornSecret,
       alchemyQueryKey,
       alchemyQueryKey2,
+      graphBaseV4SubgraphId,
+      graphBearerToken,
       theGraphApiKey,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
@@ -78,7 +111,6 @@ export class RoutingAPIStack extends cdk.Stack {
       poolCacheGzipKey,
       poolCacheLambdaNameArray,
       tokenListCacheBucket,
-      ipfsPoolCachingLambda,
     } = new RoutingCachingStack(this, 'RoutingCachingStack', {
       chatbotSNSArn,
       stage,
@@ -90,6 +122,8 @@ export class RoutingAPIStack extends cdk.Stack {
       alchemyQueryKey2,
       theGraphApiKey,
       useExplicitResourceNames,
+      graphBaseV4SubgraphId,
+      graphBearerToken,
     })
 
     const {
@@ -241,11 +275,8 @@ export class RoutingAPIStack extends cdk.Stack {
       apiName: api.restApiName,
       routingLambdaName: routingLambda.functionName,
       poolCacheLambdaNameArray,
-      ipfsPoolCacheLambdaName: ipfsPoolCachingLambda ? ipfsPoolCachingLambda.functionName : undefined,
-      useExplicitResourceNames,
     })
 
-    new RpcGatewayDashboardStack(this, 'RpcGatewayDashboardStack', { useExplicitResourceNames })
     new RpcGatewayFallbackStack(this, 'RpcGatewayFallbackStack', { rpcProviderHealthStateDynamoDb })
 
     const lambdaIntegration = new aws_apigateway.LambdaIntegration(routingLambdaAlias)

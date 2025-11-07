@@ -12,6 +12,7 @@ import * as path from 'path'
 import { chainProtocols } from '../../lib/cron/cache-config'
 import { STAGE } from '../../lib/util/stage'
 import { PoolCachingFilePrefixes } from '../../lib/util/poolCachingFilePrefixes'
+import { ChainId } from '@uniswap/sdk-core'
 
 export interface RoutingCachingStackProps extends cdk.NestedStackProps {
   stage: string
@@ -24,6 +25,8 @@ export interface RoutingCachingStackProps extends cdk.NestedStackProps {
   alchemyQueryKey2?: string
   theGraphApiKey?: string
   useExplicitResourceNames?: boolean
+  graphBaseV4SubgraphId?: string
+  graphBearerToken?: string
 }
 
 export class RoutingCachingStack extends cdk.NestedStack {
@@ -33,20 +36,25 @@ export class RoutingCachingStack extends cdk.NestedStack {
   public readonly poolCacheKey: string
   public readonly poolCacheGzipKey: string
   public readonly tokenListCacheBucket: aws_s3.Bucket
-  public readonly ipfsPoolCachingLambda: aws_lambda_nodejs.NodejsFunction
-  public readonly ipfsCleanPoolCachingLambda: aws_lambda_nodejs.NodejsFunction
   public readonly poolCacheLambdaNameArray: string[] = []
   public readonly alchemyQueryKey: string | undefined = undefined
   public readonly alchemyQueryKey2: string | undefined = undefined
+  public readonly graphBaseV4SubgraphId: string | undefined = undefined
+  public readonly graphBearerToken: string | undefined = undefined
   public readonly theGraphApiKey: string | undefined = undefined
 
   constructor(scope: Construct, name: string, props: RoutingCachingStackProps) {
     super(scope, name, props)
 
     const { alchemyQueryKey, alchemyQueryKey2, theGraphApiKey } = props
+    const { chatbotSNSArn, alchemyQueryKey, alchemyQueryKey2, graphBaseV4SubgraphId, graphBearerToken } = props
+
+    const chatBotTopic = chatbotSNSArn ? aws_sns.Topic.fromTopicArn(this, 'ChatbotTopic', chatbotSNSArn) : undefined
 
     this.alchemyQueryKey = alchemyQueryKey
     this.alchemyQueryKey2 = alchemyQueryKey2
+    this.graphBaseV4SubgraphId = graphBaseV4SubgraphId
+    this.graphBearerToken = graphBearerToken
     this.theGraphApiKey = theGraphApiKey
     // TODO: Remove and swap to the new bucket below. Kept around for the rollout, but all requests will go to bucket 2.
     this.poolCacheBucket = new aws_s3.Bucket(this, 'PoolCacheBucket')
@@ -76,7 +84,7 @@ export class RoutingCachingStack extends cdk.NestedStack {
     this.poolCacheKey = PoolCachingFilePrefixes.PlainText
     this.poolCacheGzipKey = PoolCachingFilePrefixes.GzipText
 
-    const { stage, route53Arn, pinata_key, pinata_secret, hosted_zone } = props
+    const { stage, route53Arn } = props
 
     const lambdaRole = new aws_iam.Role(this, 'RoutingLambdaRole', {
       assumedBy: new aws_iam.ServicePrincipal('lambda.amazonaws.com'),
@@ -116,7 +124,7 @@ export class RoutingCachingStack extends cdk.NestedStack {
           entry: path.join(__dirname, '../../lib/cron/cache-pools.ts'),
           handler: 'handler',
           timeout: Duration.seconds(900),
-          memorySize: 2560,
+          memorySize: chainId === ChainId.BASE ? 5120 : 2560,
           bundling: {
             minify: true,
             sourceMap: true,
@@ -125,11 +133,14 @@ export class RoutingCachingStack extends cdk.NestedStack {
           layers: [lambdaLayerVersion],
           tracing: aws_lambda.Tracing.ACTIVE,
           environment: {
+            VERSION: '3',
             POOL_CACHE_BUCKET: this.poolCacheBucket.bucketName,
             POOL_CACHE_BUCKET_3: this.poolCacheBucket3.bucketName,
             POOL_CACHE_GZIP_KEY: this.poolCacheGzipKey,
             ALCHEMY_QUERY_KEY: this.alchemyQueryKey ?? '',
             ALCHEMY_QUERY_KEY_2: this.alchemyQueryKey2 ?? '',
+            GRAPH_BASE_V4_SUBGRAPH_ID: this.graphBaseV4SubgraphId ?? '',
+            GRAPH_BEARER_TOKEN: this.graphBearerToken ?? '',
             THEGRAPH_API_KEY: this.theGraphApiKey ?? '',
             chainId: chainId.toString(),
             protocol,
@@ -144,76 +155,6 @@ export class RoutingCachingStack extends cdk.NestedStack {
       this.poolCacheBucket2.grantReadWrite(lambda)
       this.poolCacheBucket3.grantReadWrite(lambda)
       this.poolCacheLambdaNameArray.push(lambda.functionName)
-    }
-
-    if (stage == STAGE.BETA || stage == STAGE.PROD) {
-      this.ipfsPoolCachingLambda = new aws_lambda_nodejs.NodejsFunction(this, 'IpfsPoolCacheLambda', {
-        role: lambdaRole,
-        runtime: aws_lambda.Runtime.NODEJS_18_X,
-        entry: path.join(__dirname, '../../lib/cron/cache-pools-ipfs.ts'),
-        handler: 'handler',
-        timeout: Duration.seconds(900),
-        memorySize: 1024,
-        bundling: {
-          minify: true,
-          sourceMap: true,
-        },
-        description: 'IPFS Pool Cache Lambda',
-        layers: [
-          aws_lambda.LayerVersion.fromLayerVersionArn(
-            this,
-            'InsightsLayerPoolsIPFS',
-            `arn:aws:lambda:${region}:580247275435:layer:LambdaInsightsExtension:14`
-          ),
-        ],
-        tracing: aws_lambda.Tracing.ACTIVE,
-        environment: {
-          PINATA_API_KEY: pinata_key!,
-          PINATA_API_SECRET: pinata_secret!,
-          ROLE_ARN: route53Arn!,
-          HOSTED_ZONE: hosted_zone!,
-          STAGE: stage,
-          REDEPLOY: '1',
-        },
-      })
-
-      new aws_events.Rule(this, 'ScheduleIpfsPoolCache', {
-        schedule: aws_events.Schedule.rate(Duration.minutes(15)),
-        targets: [new aws_events_targets.LambdaFunction(this.ipfsPoolCachingLambda)],
-      })
-
-      this.ipfsCleanPoolCachingLambda = new aws_lambda_nodejs.NodejsFunction(this, 'CleanIpfsPoolCacheLambda', {
-        role: lambdaRole,
-        runtime: aws_lambda.Runtime.NODEJS_18_X,
-        entry: path.join(__dirname, '../../lib/cron/clean-pools-ipfs.ts'),
-        handler: 'handler',
-        timeout: Duration.seconds(900),
-        memorySize: 512,
-        bundling: {
-          minify: true,
-          sourceMap: true,
-        },
-        description: 'Clean IPFS Pool Cache Lambda',
-        layers: [
-          aws_lambda.LayerVersion.fromLayerVersionArn(
-            this,
-            'InsightsLayerPoolsCleanIPFS',
-            `arn:aws:lambda:${region}:580247275435:layer:LambdaInsightsExtension:14`
-          ),
-        ],
-        tracing: aws_lambda.Tracing.ACTIVE,
-        environment: {
-          PINATA_API_KEY: pinata_key!,
-          PINATA_API_SECRET: pinata_secret!,
-          STAGE: stage,
-          REDEPLOY: '1',
-        },
-      })
-
-      new aws_events.Rule(this, 'ScheduleCleanIpfsPoolCache', {
-        schedule: aws_events.Schedule.rate(Duration.minutes(30)),
-        targets: [new aws_events_targets.LambdaFunction(this.ipfsCleanPoolCachingLambda)],
-      })
     }
 
     this.tokenListCacheBucket = new aws_s3.Bucket(this, 'TokenListCacheBucket')

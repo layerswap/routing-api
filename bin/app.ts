@@ -39,6 +39,8 @@ export class RoutingAPIStage extends Stage {
       unicornSecret: string
       alchemyQueryKey?: string
       alchemyQueryKey2?: string
+      graphBaseV4SubgraphId?: string
+      graphBearerToken?: string
       theGraphApiKey?: string
       uniGraphQLEndpoint: string
       uniGraphQLHeaderOrigin: string
@@ -64,6 +66,8 @@ export class RoutingAPIStage extends Stage {
       alchemyQueryKey,
       alchemyQueryKey2,
       theGraphApiKey,
+      graphBaseV4SubgraphId,
+      graphBearerToken,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
     } = props
@@ -87,6 +91,8 @@ export class RoutingAPIStage extends Stage {
       alchemyQueryKey,
       alchemyQueryKey2,
       theGraphApiKey,
+      graphBaseV4SubgraphId,
+      graphBearerToken,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
     })
@@ -196,6 +202,7 @@ export class RoutingAPIPipeline extends Stack {
         chainId !== ChainId.WORLDCHAIN &&
         chainId !== ChainId.UNICHAIN_SEPOLIA &&
         chainId !== ChainId.MONAD_TESTNET &&
+        chainId !== ChainId.MONAD &&
         chainId !== ChainId.BASE_SEPOLIA &&
         chainId !== ChainId.UNICHAIN &&
         chainId !== ChainId.SONEIUM
@@ -270,7 +277,7 @@ export class RoutingAPIPipeline extends Stack {
       env: { account: '145079444317', region: 'us-east-2' },
       jsonRpcProviders: jsonRpcProviders,
       internalApiKey: internalApiKey.secretValue.toString(),
-      provisionedConcurrency: 1,
+      provisionedConcurrency: 5,
       ethGasStationInfoUrl: ethGasStationInfoUrl.secretValue.toString(),
       stage: STAGE.BETA,
       route53Arn: route53Arn.secretValueFromJson('arn').toString(),
@@ -284,6 +291,10 @@ export class RoutingAPIPipeline extends Stack {
       unicornSecret: unicornSecrets.secretValueFromJson('debug-config-unicorn-key').toString(),
       alchemyQueryKey: alchemySubgraphSecret.secretValueFromJson('alchemy-query-key').toString(),
       alchemyQueryKey2: alchemySubgraphSecret.secretValueFromJson('alchemy-query-key-2').toString(),
+      // bearer token and base subgraph id are not from alchemy subgraph, but from the graph
+      // below secret namings are wrong, but we take it as is
+      graphBearerToken: alchemySubgraphSecret.secretValueFromJson('alchemy-bearer-token').toString(),
+      graphBaseV4SubgraphId: alchemySubgraphSecret.secretValueFromJson('alchemy-base-v4-subgraph-id').toString(),
       uniGraphQLEndpoint: routingApiNewSecrets.secretValueFromJson('uni-graphql-endpoint').toString(),
       uniGraphQLHeaderOrigin: routingApiNewSecrets.secretValueFromJson('uni-graphql-header-origin').toString(),
     })
@@ -313,6 +324,10 @@ export class RoutingAPIPipeline extends Stack {
       unicornSecret: unicornSecrets.secretValueFromJson('debug-config-unicorn-key').toString(),
       alchemyQueryKey: alchemySubgraphSecret.secretValueFromJson('alchemy-query-key').toString(),
       alchemyQueryKey2: alchemySubgraphSecret.secretValueFromJson('alchemy-query-key-2').toString(),
+      // bearer token and base subgraph id are not from alchemy subgraph, but from the graph
+      // below secret namings are wrong, but we take it as is
+      graphBearerToken: alchemySubgraphSecret.secretValueFromJson('alchemy-bearer-token').toString(),
+      graphBaseV4SubgraphId: alchemySubgraphSecret.secretValueFromJson('alchemy-base-v4-subgraph-id').toString(),
       uniGraphQLEndpoint: routingApiNewSecrets.secretValueFromJson('uni-graphql-endpoint').toString(),
       uniGraphQLHeaderOrigin: routingApiNewSecrets.secretValueFromJson('uni-graphql-header-origin').toString(),
     })
@@ -346,6 +361,7 @@ export class RoutingAPIPipeline extends Stack {
         UNISWAP_ROUTING_API: routingAPIStage.url,
       },
       buildEnvironment: {
+        computeType: cdk.aws_codebuild.ComputeType.LARGE,
         environmentVariables: {
           NPM_TOKEN: {
             value: 'npm-private-repo-access-token',
@@ -398,7 +414,7 @@ const jsonRpcProviders = {
 // Local dev stack
 new RoutingAPIStack(app, 'RoutingAPIStack', {
   jsonRpcProviders: jsonRpcProviders,
-  provisionedConcurrency: process.env.PROVISION_CONCURRENCY ? parseInt(process.env.PROVISION_CONCURRENCY) : 5,
+  provisionedConcurrency: process.env.PROVISION_CONCURRENCY ? parseInt(process.env.PROVISION_CONCURRENCY) : 1,
   throttlingOverride: process.env.THROTTLE_PER_FIVE_MINS,
   ethGasStationInfoUrl: process.env.ETH_GAS_STATION_INFO_URL!,
   chatbotSNSArn: process.env.CHATBOT_SNS_ARN,

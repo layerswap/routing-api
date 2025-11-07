@@ -44,6 +44,9 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
   const provider = chainProtocols.find(
     (element) => element.protocol == protocol && element.chainId == chainId
   )!.provider
+  const eulerHooksProvider = chainProtocols.find(
+    (element) => element.protocol == protocol && element.chainId == chainId
+  )?.eulerHooksProvider
   const log: Logger = bunyan.createLogger({
     name: 'RoutingLambda',
     serializers: bunyan.stdSerializers,
@@ -213,7 +216,9 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
         const shouldFilterOut =
           // filter out AMPL-token pools from v3 subgraph, since they are not supported on v3
           pool.token0.id.toLowerCase() === '0xd46ba6d942050d489dbd938a2c909a5d5039a161' ||
-          pool.token1.id.toLowerCase() === '0xd46ba6d942050d489dbd938a2c909a5d5039a161'
+          pool.token1.id.toLowerCase() === '0xd46ba6d942050d489dbd938a2c909a5d5039a161' ||
+          // https://linear.app/uniswap/issue/CX-1005
+          pool.id.toLowerCase() === '0x0f681f10ab1aa1cde04232a199fe3c6f2652a80c'
 
         if (shouldFilterOut) {
           log.info(`Filtering out pool ${pool.id} from ${protocol} on ${chainId}`)
@@ -232,10 +237,16 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
           hooks: '0xc5a48b447f01e9ce3ede71e4c1c2038c38bd9000',
           liquidity: '274563705100803912362733',
           token0: {
+            symbol: 'fid:385955',
             id: '0x112cf1cc540eadf234158c0e4044c3b5f2a33e5e',
+            name: 'degenfans',
+            decimals: '18',
           },
           token1: {
+            symbol: 'MOXIE',
             id: '0x8c9037d1ef5c6d1f6816278c7aaf5491d24cd527',
+            name: 'Moxie',
+            decimals: '18',
           },
           tvlETH: 25.33120577965346308313185954009482,
           tvlUSD: 56627.5525783346590219799350683533,
@@ -247,10 +258,16 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
           hooks: '0xc5a48b447f01e9ce3ede71e4c1c2038c38bd9000',
           liquidity: '621568112474979678301274',
           token0: {
+            symbol: 'base-economy',
             id: '0x125490489a27d541e39813c08d260debac071bb7',
+            name: 'Base Economy',
+            decimals: '18',
           },
           token1: {
+            symbol: 'MOXIE',
             id: '0x8c9037d1ef5c6d1f6816278c7aaf5491d24cd527',
+            name: 'Moxie',
+            decimals: '18',
           },
           tvlETH: 142.7576163222032969740638595951846,
           tvlUSD: 316322.6881520965844428159264274397,
@@ -262,15 +279,167 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
           hooks: '0xc5a48b447f01e9ce3ede71e4c1c2038c38bd9000',
           liquidity: '482843960670027606548690',
           token0: {
+            symbol: 'fid:444067',
             id: '0x15148da22518e40e0d2fabf5d5e6a22269ebcb30',
+            name: 'macster',
+            decimals: '18',
           },
           token1: {
+            symbol: 'MOXIE',
             id: '0x8c9037d1ef5c6d1f6816278c7aaf5491d24cd527',
+            name: 'Moxie',
+            decimals: '18',
           },
           tvlETH: 44.1795925485023741879813651641809,
           tvlUSD: 95050.95363442908526427214106054717,
         } as V4SubgraphPool,
       ]
+
+      if (eulerHooksProvider) {
+        const eulerHooks = await eulerHooksProvider?.getHooks()
+        if (eulerHooks) {
+          metric.putMetric('eulerHooks.length', eulerHooks.length)
+
+          const eulerPools = await Promise.all(
+            eulerHooks.map(async (eulerHook) => {
+              const pool = await eulerHooksProvider?.getPoolByHook(eulerHook.hook)
+              log.info(`eulerHooks pool ${JSON.stringify(pool)}`)
+
+              // we need to inflate euler pool TVL from 0 to significant TVL, so that they have a chance to be picked up
+              ;(pool as V4SubgraphPool).tvlUSD = 1000
+              ;(pool as V4SubgraphPool).tvlETH = 5500000
+
+              return pool
+            })
+          )
+
+          eulerPools.forEach((pool) => {
+            if (pool) {
+              manuallyIncludedV4Pools.push(pool as V4SubgraphPool)
+            }
+          })
+        }
+      }
+
+      if (chainId === ChainId.UNICHAIN) {
+        // UNICHAIN ETH/WETH: https://uniscan.xyz/tx/0x935979a7e4a1e3ea92b180009c46242b89a787fb4f2f5799bd53c675d5e0f9fd#eventlog
+        manuallyIncludedV4Pools.push({
+          id: '0xba246b8420b5aeb13e586cd7cbd32279fa7584d7f4cbc9bd356a6bb6200d16a6',
+          feeTier: '0',
+          tickSpacing: '1',
+          hooks: '0x730b109bad65152c67ecc94eb8b0968603dba888',
+          liquidity: '173747248900',
+          token0: {
+            symbol: 'ETH',
+            id: '0x0000000000000000000000000000000000000000',
+            name: 'Ethereum',
+            decimals: '18',
+          },
+          token1: {
+            symbol: 'WETH',
+            id: '0x4200000000000000000000000000000000000006',
+            name: 'Wrapped Ether',
+            decimals: '18',
+          },
+          tvlETH: 33482,
+          tvlUSD: 60342168,
+        } as V4SubgraphPool)
+      }
+
+      if (chainId === ChainId.OPTIMISM) {
+        // OPTIMISM ETH/WETH: https://optimistic.etherscan.io/tx/0x5f81f2aa19a50a76a94a30d3d2a9540cb3cd8597c94499a50330e4b6acbef5c1#eventlog
+        manuallyIncludedV4Pools.push({
+          id: '0xbf3d38951e485c811bb1fc7025fcd1ef60c15fda4c4163458facb9bedfe26f83',
+          feeTier: '0',
+          tickSpacing: '1',
+          hooks: '0x480dafdb4d6092ef3217595b75784ec54b52e888',
+          liquidity: '173747248900',
+          token0: {
+            symbol: 'ETH',
+            id: '0x0000000000000000000000000000000000000000',
+            name: 'Ethereum',
+            decimals: '18',
+          },
+          token1: {
+            symbol: 'WETH',
+            id: '0x4200000000000000000000000000000000000006',
+            name: 'Wrapped Ether',
+            decimals: '18',
+          },
+          tvlETH: 826,
+          tvlUSD: 1482475,
+        } as V4SubgraphPool)
+      }
+
+      if (chainId === ChainId.BASE) {
+        // BASE ETH/WETH: https://basescan.org/tx/0x221b6521ee4a19a25a424ecfb36b58b0b68fce7cda106bf4551d1424b0867bcc#eventlog
+        manuallyIncludedV4Pools.push({
+          id: '0xbb2aefc6c55a0464b944c0478869527ba1a537f05f90a1bb82e1196c6e9403e2',
+          feeTier: '0',
+          tickSpacing: '1',
+          hooks: '0xb08211d57032dd10b1974d4b876851a7f7596888',
+          liquidity: '173747248900',
+          token0: {
+            symbol: 'ETH',
+            id: '0x0000000000000000000000000000000000000000',
+            name: 'Ethereum',
+            decimals: '18',
+          },
+          token1: {
+            symbol: 'WETH',
+            id: '0x4200000000000000000000000000000000000006',
+            name: 'Wrapped Ether',
+            decimals: '18',
+          },
+          tvlETH: 6992,
+          tvlUSD: 12580000,
+        } as V4SubgraphPool)
+      }
+
+      if (chainId === ChainId.ARBITRUM_ONE) {
+        // ARBITRUM ETH/WETH: https://arbiscan.io/tx/0x0b393d141a3770292ae8508626a4443307403b0b958b7d0eff70fca2fb85c106#eventlog
+        manuallyIncludedV4Pools.push({
+          id: '0xc1c777843809a8e77a398fd79ecddcefbdad6a5676003ae2eedf3a33a56589e9',
+          feeTier: '0',
+          tickSpacing: '1',
+          hooks: '0x2a4adf825bd96598487dbb6b2d8d882a4eb86888',
+          liquidity: '173747248900',
+          token0: {
+            id: '0x0000000000000000000000000000000000000000',
+          },
+          token1: {
+            id: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+          },
+          tvlETH: 23183,
+          tvlUSD: 41820637,
+        } as V4SubgraphPool)
+      }
+
+      if (chainId === ChainId.MAINNET) {
+        // Mainnet ETH/WETH: https://app.uniswap.org/explore/pools/ethereum/0xf6f2314ac16a878e2bf8ef01ef0a3487e714d397d87f702b9a08603eb3252e92
+        manuallyIncludedV4Pools.push({
+          id: '0xf6f2314ac16a878e2bf8ef01ef0a3487e714d397d87f702b9a08603eb3252e92',
+          feeTier: '0',
+          tickSpacing: '1',
+          hooks: '0x57991106cb7aa27e2771beda0d6522f68524a888',
+          liquidity: '482843960670027606548690',
+          token0: {
+            symbol: 'ETH',
+            id: '0x0000000000000000000000000000000000000000',
+            name: 'ETH',
+            decimals: '18',
+          },
+          token1: {
+            symbol: 'WETH',
+            id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+            name: 'WETH',
+            decimals: '18',
+          },
+          tvlETH: 44000.1795925485023741879813651641809,
+          tvlUSD: 95050000.95363442908526427214106054717,
+        } as V4SubgraphPool)
+      }
+
       manuallyIncludedV4Pools.forEach((pool) => pools.push(pool))
 
       pools = v4HooksPoolsFiltering(chainId, pools as Array<V4SubgraphPool>)
@@ -297,6 +466,11 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
 
   const serializedPools = JSON.stringify(pools)
   const compressedPools = zlib.deflateSync(serializedPools)
+
+  // Calculate sizes in MB
+  const serializedSizeMB = (Buffer.byteLength(serializedPools, 'utf8') / (1024 * 1024)).toFixed(2)
+  const compressedSizeMB = (Buffer.byteLength(compressedPools) / (1024 * 1024)).toFixed(2)
+
   const result = await s3
     .putObject({
       Bucket: process.env.POOL_CACHE_BUCKET_3!,
@@ -313,9 +487,11 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
   metric.putMetric(`${metricPrefix}.latency`, Date.now() - beforeAll)
 
   log.info(
-    `compression ratio for ${chainId} ${protocol} pool file is ${serializedPools.length}:${compressedPools.length}`
+    `compression ratio for ${chainId} ${protocol} pool file is ${serializedPools.length}:${compressedPools.length} (${serializedSizeMB}MB -> ${compressedSizeMB}MB)`
   )
   metric.putMetric(`${metricPrefix}.compression_ratio`, serializedPools.length / compressedPools.length)
+  metric.putMetric(`${metricPrefix}.compressed_size_mb`, parseFloat(compressedSizeMB))
+  metric.putMetric(`${metricPrefix}.serialized_size_mb`, parseFloat(serializedSizeMB))
 })
 
 module.exports = { handler }

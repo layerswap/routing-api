@@ -37,7 +37,6 @@ export function chainIdToNetworkName(networkId: ChainId): string {
 
 export function generateProviderUrl(key: string, value: string): string {
   switch (key) {
-  
     // Alchemy
     case 'ALCHEMY_10': {
       return `https://opt-mainnet.g.alchemy.com/v2/${value}`

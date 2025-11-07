@@ -4,58 +4,45 @@ import { ChainId } from '@uniswap/sdk-core'
 
 // during local cdk stack update, the env vars are not populated
 // make sure to fill in the env vars below
-// we have two alchemy accounts to split the load, v3 and v4 subgraphs are on
-// the second account while v2 is on the first
 // process.env.ALCHEMY_QUERY_KEY = ''
 // process.env.ALCHEMY_QUERY_KEY_2 = ''
 
 // The Graph Gateway requires bearer token authentication
 // Add this header to your subgraph requests
 export const theGraphHeaders = () => {
-  const apiKey = process.env.THEGRAPH_API_KEY
-  if (!apiKey) {
-    throw new Error('THEGRAPH_API_KEY environment variable is not set')
-  }
-  return {
-    Authorization: `Bearer ${apiKey}`,
-  }
+    const apiKey = process.env.THEGRAPH_API_KEY
+    if (!apiKey) {
+        throw new Error('THEGRAPH_API_KEY environment variable is not set')
+    }
+    return {
+        Authorization: `Bearer ${apiKey}`,
+    }
 }
 
 export const v4SubgraphUrlOverride = (chainId: ChainId) => {
     switch (chainId) {
-        case ChainId.SEPOLIA:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/sepolia-v4/api`
+        case ChainId.MAINNET:
+            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/ethereum-v4/api`
         case ChainId.ARBITRUM_ONE:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/arbitrum-v4/api`
         case ChainId.BASE:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/base-v4/api`
         case ChainId.POLYGON:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/polygon-v4/api`
-        case ChainId.WORLDCHAIN:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/worldchain-v4/api`
-        case ChainId.ZORA:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/zora-v4/api`
-        case ChainId.UNICHAIN:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/unichain-v4/api`
         case ChainId.BNB:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/bsc-v4/api`
-        case ChainId.BLAST:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/blast-v4/api`
-        case ChainId.MAINNET:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/ethereum-v4/api`
-        case ChainId.SONEIUM:
-            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/soneium-v4/api`
         case ChainId.AVALANCHE:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/avalanche-v4/api`
         case ChainId.OPTIMISM:
             return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/optimism-v4/api`
+        case ChainId.UNICHAIN:
+            return `https://subgraph.satsuma-prod.com/${process.env.ALCHEMY_QUERY_KEY}/bransfer/unichain-v4/api`
         default:
             return undefined
     }
 }
 
-// V3 Subgraph URLs using The Graph Gateway
-// Replace SUBGRAPH_ID_PLACEHOLDER with actual subgraph IDs from The Graph
+/* ---------- V3: keep your The Graph gateway IDs ---------- */
 export const v3SubgraphUrlOverride = (chainId: ChainId) => {
     switch (chainId) {
         case ChainId.MAINNET:
@@ -70,28 +57,16 @@ export const v3SubgraphUrlOverride = (chainId: ChainId) => {
             return `https://gateway.thegraph.com/api/subgraphs/id/GVH9h9KZ9CqheUEL93qMbq7QwgoBu32QXQDPR6bev4Eo`
         case ChainId.BNB:
             return `https://gateway.thegraph.com/api/subgraphs/id/G5MUbSBM7Nsrm9tH2tGQUiAF4SZDGf2qeo1xPLYjKr7K`
-        case ChainId.BLAST:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.BASE:
             return `https://gateway.thegraph.com/api/subgraphs/id/43Hwfi3dJSoGpyas9VwNoDAv55yjgGrPpNSmbQZArzMG`
-        case ChainId.CELO:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.WORLDCHAIN:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.UNICHAIN_SEPOLIA:
-            return `https://gateway.thegraph.com/api/subgraphs/id/Eeg7Gq1ofowbpdTHcNYs4FotnHSddkz5iTNiQQVq7Q6K`
         case ChainId.UNICHAIN:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.ZORA:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.SONEIUM:
             return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         default:
             return undefined
     }
 }
-// V2 Subgraph URLs using The Graph Gateway
-// Replace SUBGRAPH_ID_PLACEHOLDER with actual subgraph IDs from The Graph
+
+/* ---------- V2: keep your The Graph gateway IDs ---------- */
 export const v2SubgraphUrlOverride = (chainId: ChainId) => {
     switch (chainId) {
         case ChainId.MAINNET:
@@ -106,33 +81,30 @@ export const v2SubgraphUrlOverride = (chainId: ChainId) => {
             return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.BNB:
             return `https://gateway.thegraph.com/api/subgraphs/id/8EjCaWZumyAfN3wyB4QnibeeXaYS8i4sp1PiWT91AGrt`
-        case ChainId.BLAST:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.BASE:
             return `https://gateway.thegraph.com/api/subgraphs/id/4jGhpKjW4prWoyt5Bwk1ZHUwdEmNWveJcjEyjoTZWCY9`
-        case ChainId.WORLDCHAIN:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.UNICHAIN_SEPOLIA:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
-        case ChainId.MONAD_TESTNET:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.UNICHAIN:
             return `https://gateway.thegraph.com/api/subgraphs/id/24MxHbKk2pzAbpGVwfe2mYZmdsUUBiLnw9g9JAYZsgD3`
-        case ChainId.SONEIUM:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         default:
             return undefined
     }
 }
 
-const v4TrackedEthThreshold = 0.01 // Pools need at least 0.01 of trackedEth to be selected
-const v4UntrackedUsdThreshold = 0 // v4 subgraph totalValueLockedUSDUntracked returns 0, even with the pools that have appropriate liqudities and correct pool pricing
+const getV3TrackedEthThreshold = (chainId: ChainId) =>
+    chainId === ChainId.BASE ? 0.1 : 0.01
 
-export const v3TrackedEthThreshold = 0.01 // Pools need at least 0.01 of trackedEth to be selected
-const v3UntrackedUsdThreshold = 25000 // Pools need at least 25K USD (untracked) to be selected (for metrics only)
+const getV2TrackedEthThreshold = (chainId: ChainId) =>
+    chainId === ChainId.BASE ? 0.1 : 0.025
 
-export const v2TrackedEthThreshold = 0.025 // Pairs need at least 0.025 of trackedEth to be selected
-const v2UntrackedUsdThreshold = Number.MAX_VALUE // Pairs need at least 1K USD (untracked) to be selected (for metrics only)
+const getV4TrackedEthThreshold = (chainId: ChainId) =>
+    chainId === ChainId.BASE ? 0.1 : 0.01
+
+const v4UntrackedUsdThreshold = 0
+const v3UntrackedUsdThreshold = 25_000
+const v2UntrackedUsdThreshold = Number.MAX_VALUE
+
+export const v3TrackedEthThreshold = 0.01 // still export a default if other code imports it
+export const v2TrackedEthThreshold = 0.025 // same here
 
 export const chainProtocols = [
     // V3.
@@ -145,7 +117,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.MAINNET),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.MAINNET)
         ),
@@ -159,7 +131,7 @@ export const chainProtocols = [
             5,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.ARBITRUM_ONE),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.ARBITRUM_ONE)
         ),
@@ -173,7 +145,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.POLYGON),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.POLYGON)
         ),
@@ -187,7 +159,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.OPTIMISM),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.OPTIMISM)
         ),
@@ -201,7 +173,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.BNB),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.BNB)
         ),
@@ -215,7 +187,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.AVALANCHE),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.AVALANCHE)
         ),
@@ -227,9 +199,9 @@ export const chainProtocols = [
         provider: new V3SubgraphProvider(
             ChainId.BASE,
             3,
-            900000, // base has more pools than other chains, so we need to increase the timeout
+            900000, // kept your larger timeout for Base
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.BASE), // 0.1 on Base
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.BASE)
         ),
@@ -243,7 +215,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v3TrackedEthThreshold,
+            getV3TrackedEthThreshold(ChainId.UNICHAIN),
             v3UntrackedUsdThreshold,
             v3SubgraphUrlOverride(ChainId.UNICHAIN)
         ),
@@ -259,11 +231,11 @@ export const chainProtocols = [
             5,
             900000,
             true,
-            1000,
-            v2TrackedEthThreshold,
+            1000, // kept your page size
+            getV2TrackedEthThreshold(ChainId.MAINNET),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.MAINNET)
-        ), // 1000 is the largest page size supported by thegraph
+        ),
     },
     {
         protocol: Protocol.V2,
@@ -275,7 +247,7 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.ARBITRUM_ONE),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.ARBITRUM_ONE)
         ),
@@ -290,7 +262,7 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.POLYGON),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.POLYGON)
         ),
@@ -305,7 +277,7 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.OPTIMISM),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.OPTIMISM)
         ),
@@ -320,7 +292,7 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.BNB),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.BNB)
         ),
@@ -335,7 +307,7 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.AVALANCHE),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.AVALANCHE)
         ),
@@ -349,8 +321,8 @@ export const chainProtocols = [
             5,
             900000,
             true,
-            5000,
-            v2TrackedEthThreshold,
+            5000, // kept your page size
+            getV2TrackedEthThreshold(ChainId.BASE), // 0.1 on Base
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.BASE)
         ),
@@ -365,14 +337,13 @@ export const chainProtocols = [
             90000,
             true,
             1000,
-            v2TrackedEthThreshold,
+            getV2TrackedEthThreshold(ChainId.UNICHAIN),
             v2UntrackedUsdThreshold,
             v2SubgraphUrlOverride(ChainId.UNICHAIN)
         ),
     },
 
-    // V4
-
+    // V4.
     {
         protocol: Protocol.V4,
         chainId: ChainId.MAINNET,
@@ -382,7 +353,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.MAINNET),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.MAINNET)
         ),
@@ -396,7 +367,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.ARBITRUM_ONE),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.ARBITRUM_ONE)
         ),
@@ -410,7 +381,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.BASE), // 0.1 on Base
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.BASE)
         ),
@@ -424,7 +395,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.BNB),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.BNB)
         ),
@@ -438,7 +409,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.OPTIMISM),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.OPTIMISM)
         ),
@@ -452,7 +423,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.AVALANCHE),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.AVALANCHE)
         ),
@@ -466,7 +437,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.POLYGON),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.POLYGON)
         ),
@@ -480,7 +451,7 @@ export const chainProtocols = [
             3,
             90000,
             true,
-            v4TrackedEthThreshold,
+            getV4TrackedEthThreshold(ChainId.UNICHAIN),
             v4UntrackedUsdThreshold,
             v4SubgraphUrlOverride(ChainId.UNICHAIN)
         ),

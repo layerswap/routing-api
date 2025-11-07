@@ -103,7 +103,7 @@ export class RoutingLambdaStack extends cdk.NestedStack {
       entry: path.join(__dirname, '../../lib/handlers/index.ts'),
       handler: 'quoteHandler',
       // 04/18/2025: async routing lambda can have much longer timeout
-      timeout: cdk.Duration.seconds(18),
+      timeout: cdk.Duration.seconds(30),
       memorySize: 5120,
       deadLetterQueueEnabled: true,
       bundling: {
@@ -115,7 +115,7 @@ export class RoutingLambdaStack extends cdk.NestedStack {
 
       description: 'Caching Routing Lambda',
       environment: {
-        VERSION: '2',
+        VERSION: '3',
         NODE_OPTIONS: '--enable-source-maps',
         POOL_CACHE_BUCKET: poolCacheBucket.bucketName,
         POOL_CACHE_BUCKET_3: poolCacheBucket3.bucketName,
@@ -157,9 +157,10 @@ export class RoutingLambdaStack extends cdk.NestedStack {
       runtime: aws_lambda.Runtime.NODEJS_18_X,
       entry: path.join(__dirname, '../../lib/handlers/index.ts'),
       handler: 'quoteHandler',
-      // Increased timeout to handle token list fetching and complex routing
-      // Previous 9s timeout was causing frequent timeouts
-      timeout: cdk.Duration.seconds(15),
+      // 11/8/23: URA currently calls the Routing API with a timeout of 10 seconds.
+      // Set this lambda's timeout to be slightly lower to give them time to
+      // log the response in the event of a failure on our end.
+      timeout: cdk.Duration.seconds(9),
       memorySize: 5120,
       deadLetterQueueEnabled: true,
       bundling: {
@@ -171,7 +172,7 @@ export class RoutingLambdaStack extends cdk.NestedStack {
 
       description: 'Routing Lambda',
       environment: {
-        VERSION: '29',
+        VERSION: '31',
         NODE_OPTIONS: '--enable-source-maps',
         POOL_CACHE_BUCKET: poolCacheBucket.bucketName,
         POOL_CACHE_BUCKET_3: poolCacheBucket3.bucketName,

@@ -94,14 +94,14 @@ import { NEW_CACHED_ROUTES_ROLLOUT_PERCENT } from '../util/newCachedRoutesRollou
 import { TENDERLY_NEW_ENDPOINT_ROLLOUT_PERCENT } from '../util/tenderlyNewEndpointRolloutPercent'
 
 export const SUPPORTED_CHAINS: ChainId[] = [
-  ChainId.MAINNET,
-  ChainId.ARBITRUM_ONE,
-  ChainId.OPTIMISM,
-  ChainId.BASE,
-  ChainId.BNB,
-  ChainId.AVALANCHE,
-  ChainId.POLYGON,
-  ChainId.UNICHAIN
+    ChainId.MAINNET,
+    ChainId.ARBITRUM_ONE,
+    ChainId.OPTIMISM,
+    ChainId.BASE,
+    ChainId.BNB,
+    ChainId.AVALANCHE,
+    ChainId.POLYGON,
+    ChainId.UNICHAIN
 ]
 const DEFAULT_TOKEN_LIST = 'https://tokens.uniswap.org'
 
@@ -141,8 +141,10 @@ export type ContainerDependencies = {
   v2Supported: ChainId[]
   v4Supported?: ChainId[]
   mixedSupported?: ChainId[]
+  mixedCrossLiquidityV3AgainstV4Supported?: ChainId[]
   v4PoolParams?: Array<[number, number, string]>
   cachedRoutesCacheInvalidationFixRolloutPercentage?: number
+  deleteCacheEnabledChains?: ChainId[]
 }
 
 export interface ContainerInjected {
@@ -345,15 +347,15 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
           // 200*725k < 150m
           let quoteProvider: IOnChainQuoteProvider | undefined = undefined
           switch (chainId) {
-            case ChainId.MAINNET:
-            case ChainId.ARBITRUM_ONE:
-            case ChainId.OPTIMISM:
-            case ChainId.AVALANCHE:
-            case ChainId.BNB:
-            case ChainId.BASE:
-            case ChainId.POLYGON:
-            case ChainId.UNICHAIN:  
-            default:
+              case ChainId.MAINNET:
+              case ChainId.ARBITRUM_ONE:
+              case ChainId.OPTIMISM:
+              case ChainId.AVALANCHE:
+              case ChainId.BNB:
+              case ChainId.BASE:
+              case ChainId.POLYGON:
+              case ChainId.UNICHAIN:
+              default:
               const currentQuoteProvider = new OnChainQuoteProvider(
                 chainId,
                 provider,
@@ -486,38 +488,48 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
             })
           }
 
-          const v2Supported = [
-            ChainId.MAINNET,
-            ChainId.ARBITRUM_ONE,
-            ChainId.BASE,
-            ChainId.POLYGON,
-            ChainId.OPTIMISM,
-            ChainId.AVALANCHE,
-            ChainId.BNB,
-            ChainId.UNICHAIN
-          ]
+            const v2Supported = [
+                ChainId.MAINNET,
+                ChainId.ARBITRUM_ONE,
+                ChainId.BASE,
+                ChainId.POLYGON,
+                ChainId.OPTIMISM,
+                ChainId.AVALANCHE,
+                ChainId.BNB,
+                ChainId.UNICHAIN
+            ]
 
-          const v4Supported = [
-            ChainId.MAINNET,
-            ChainId.ARBITRUM_ONE,
-            ChainId.BASE,
-            ChainId.POLYGON,
-            ChainId.OPTIMISM,
-            ChainId.AVALANCHE,
-            ChainId.BNB,
-            ChainId.UNICHAIN
-          ]
+            const v4Supported = [
+                ChainId.MAINNET,
+                ChainId.ARBITRUM_ONE,
+                ChainId.BASE,
+                ChainId.POLYGON,
+                ChainId.OPTIMISM,
+                ChainId.AVALANCHE,
+                ChainId.BNB,
+                ChainId.UNICHAIN
+            ]
+            const deleteCacheEnabledChains = [
+                ChainId.MAINNET,
+                ChainId.ARBITRUM_ONE,
+                ChainId.BASE,
+                ChainId.POLYGON,
+                ChainId.OPTIMISM,
+                ChainId.AVALANCHE,
+                ChainId.BNB,
+                ChainId.UNICHAIN
+            ]
 
-          const mixedSupported = [
-            ChainId.MAINNET,
-            ChainId.ARBITRUM_ONE,
-            ChainId.BASE,
-            ChainId.POLYGON,
-            ChainId.OPTIMISM,
-            ChainId.AVALANCHE,
-            ChainId.BNB,
-            ChainId.UNICHAIN
-          ]
+            const mixedSupported = [
+                ChainId.MAINNET,
+                ChainId.ARBITRUM_ONE,
+                ChainId.BASE,
+                ChainId.POLYGON,
+                ChainId.OPTIMISM,
+                ChainId.AVALANCHE,
+                ChainId.BNB,
+                ChainId.UNICHAIN
+            ]
 
           const cachedRoutesCacheInvalidationFixRolloutPercentage = NEW_CACHED_ROUTES_ROLLOUT_PERCENT[chainId]
 
@@ -554,8 +566,10 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
               v2Supported,
               v4Supported,
               mixedSupported,
+              mixedCrossLiquidityV3AgainstV4Supported,
               v4PoolParams,
               cachedRoutesCacheInvalidationFixRolloutPercentage,
+              deleteCacheEnabledChains,
             },
           }
         })

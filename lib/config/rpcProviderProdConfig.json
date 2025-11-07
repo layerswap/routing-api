@@ -53,7 +53,7 @@
     "providerUrls": ["ALCHEMY_43114"],
     "providerNames": ["ALCHEMY"]
   },
-    {
+  {
     "chainId": 130,
     "useMultiProviderProb": 1,
     "latencyEvaluationSampleProb": 0,
@@ -62,7 +62,7 @@
     "providerUrls": ["ALCHEMY_130"],
     "providerNames": ["ALCHEMY"]
   },
-    {
+  {
     "chainId": 137,
     "useMultiProviderProb": 1,
     "latencyEvaluationSampleProb": 0,
