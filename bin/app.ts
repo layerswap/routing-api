@@ -202,7 +202,6 @@ export class RoutingAPIPipeline extends Stack {
         chainId !== ChainId.WORLDCHAIN &&
         chainId !== ChainId.UNICHAIN_SEPOLIA &&
         chainId !== ChainId.MONAD_TESTNET &&
-        chainId !== ChainId.MONAD &&
         chainId !== ChainId.BASE_SEPOLIA &&
         chainId !== ChainId.UNICHAIN &&
         chainId !== ChainId.SONEIUM
@@ -459,7 +458,7 @@ new RoutingAPIStack(app, 'RoutingAPIStackDev', {
   alchemyQueryKey: process.env.ALCHEMY_QUERY_KEY!,
   alchemyQueryKey2: process.env.ALCHEMY_QUERY_KEY_2!,
   theGraphApiKey: process.env.THEGRAPH_API_KEY!,
-  useExplicitResourceNames: false, // Use auto-generated names to avoid conflicts
+  resourceNamePrefix: 'DEV-', // Use DEV- prefix for resource names
 })
 
 new RoutingAPIPipeline(app, 'RoutingAPIPipelineStack', {

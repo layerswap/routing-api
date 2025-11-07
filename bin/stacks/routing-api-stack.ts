@@ -9,11 +9,9 @@ import { RoutingCachingStack } from './routing-caching-stack'
 import { RoutingDashboardStack } from './routing-dashboard-stack'
 import { RoutingLambdaStack } from './routing-lambda-stack'
 import { RoutingDatabaseStack } from './routing-database-stack'
-import { RpcGatewayDashboardStack } from './rpc-gateway-dashboard'
-import { REQUEST_SOURCES } from '../../lib/util/requestSources'
 import { TESTNETS } from '../../lib/util/testNets'
 import { RpcGatewayFallbackStack } from './rpc-gateway-fallback-stack'
-import { chainProtocols } from '../../lib/cron/cache-config'
+import { ChainId } from '@uniswap/sdk-core'
 
 export const CHAINS_NOT_MONITORED: ChainId[] = TESTNETS
 export const REQUEST_SOURCES_NOT_MONITORED = ['unknown']
@@ -71,7 +69,7 @@ export class RoutingAPIStack extends cdk.Stack {
       graphBearerToken?: string
       uniGraphQLEndpoint: string
       uniGraphQLHeaderOrigin: string
-      useExplicitResourceNames?: boolean // Set to false for staging to auto-generate unique names
+      resourceNamePrefix?: string // Optional prefix for resource names (e.g., 'DEV-'). If empty/undefined, names are auto-generated
     }
   ) {
     super(parent, name, props)
@@ -100,7 +98,7 @@ export class RoutingAPIStack extends cdk.Stack {
       theGraphApiKey,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
-      useExplicitResourceNames = true, // Default to true for backward compatibility
+      resourceNamePrefix,
     } = props
 
     const {
@@ -121,7 +119,7 @@ export class RoutingAPIStack extends cdk.Stack {
       alchemyQueryKey,
       alchemyQueryKey2,
       theGraphApiKey,
-      useExplicitResourceNames,
+      resourceNamePrefix,
       graphBaseV4SubgraphId,
       graphBearerToken,
     })
@@ -135,7 +133,7 @@ export class RoutingAPIStack extends cdk.Stack {
       cachedV2PairsDynamoDb,
       tokenPropertiesCachingDynamoDb,
       rpcProviderHealthStateDynamoDb,
-    } = new RoutingDatabaseStack(this, 'RoutingDatabaseStack', { stage, useExplicitResourceNames })
+    } = new RoutingDatabaseStack(this, 'RoutingDatabaseStack', { stage, resourceNamePrefix })
 
     const { routingLambda, routingLambdaAlias } = new RoutingLambdaStack(this, 'RoutingLambdaStack', {
       poolCacheBucket,
@@ -205,15 +203,15 @@ export class RoutingAPIStack extends cdk.Stack {
           content: '{"errorCode": "TOO_MANY_REQUESTS"}',
         },
       },
-      // Only set explicit name for prod. Let CDK auto-generate for staging to avoid conflicts
-      name: useExplicitResourceNames ? 'RoutingAPIIPThrottling' : undefined,
+      // Only set explicit name if resourceNamePrefix is provided, otherwise auto-generate
+      name: resourceNamePrefix ? `${resourceNamePrefix}RoutingAPIIPThrottling` : undefined,
       rules: [
         {
           name: 'ip',
           priority: 0,
           statement: {
             rateBasedStatement: {
-              // Limit is per 5 mins, i.e. 200 requests every 5 mins
+              // Limit is per 5 mins, i.e. 600 requests every 5 mins
               limit: throttlingOverride ? parseInt(throttlingOverride) : 600,
               // API is of type EDGE so is fronted by Cloudfront as a proxy.
               // Use the ip set in X-Forwarded-For by Cloudfront, not the regular IP

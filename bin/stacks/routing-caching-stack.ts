@@ -24,7 +24,7 @@ export interface RoutingCachingStackProps extends cdk.NestedStackProps {
   alchemyQueryKey?: string
   alchemyQueryKey2?: string
   theGraphApiKey?: string
-  useExplicitResourceNames?: boolean
+  resourceNamePrefix?: string // Optional prefix for resource names (e.g., 'DEV-')
   graphBaseV4SubgraphId?: string
   graphBearerToken?: string
 }
@@ -46,10 +46,7 @@ export class RoutingCachingStack extends cdk.NestedStack {
   constructor(scope: Construct, name: string, props: RoutingCachingStackProps) {
     super(scope, name, props)
 
-    const { alchemyQueryKey, alchemyQueryKey2, theGraphApiKey } = props
-    const { chatbotSNSArn, alchemyQueryKey, alchemyQueryKey2, graphBaseV4SubgraphId, graphBearerToken } = props
-
-    const chatBotTopic = chatbotSNSArn ? aws_sns.Topic.fromTopicArn(this, 'ChatbotTopic', chatbotSNSArn) : undefined
+    const { alchemyQueryKey, alchemyQueryKey2, graphBaseV4SubgraphId, graphBearerToken, theGraphApiKey, resourceNamePrefix } = props
 
     this.alchemyQueryKey = alchemyQueryKey
     this.alchemyQueryKey2 = alchemyQueryKey2
