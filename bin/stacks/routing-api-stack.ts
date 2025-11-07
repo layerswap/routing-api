@@ -273,6 +273,7 @@ export class RoutingAPIStack extends cdk.Stack {
       apiName: api.restApiName,
       routingLambdaName: routingLambda.functionName,
       poolCacheLambdaNameArray,
+      resourceNamePrefix,
     })
 
     new RpcGatewayFallbackStack(this, 'RpcGatewayFallbackStack', { rpcProviderHealthStateDynamoDb })

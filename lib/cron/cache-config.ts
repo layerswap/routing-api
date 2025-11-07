@@ -355,6 +355,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.MAINNET),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.MAINNET)
         ),
     },
@@ -369,6 +371,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.ARBITRUM_ONE),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.ARBITRUM_ONE)
         ),
     },
@@ -383,6 +387,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.BASE), // 0.1 on Base
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.BASE)
         ),
     },
@@ -397,6 +403,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.BNB),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.BNB)
         ),
     },
@@ -411,6 +419,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.OPTIMISM),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.OPTIMISM)
         ),
     },
@@ -425,6 +435,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.AVALANCHE),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.AVALANCHE)
         ),
     },
@@ -439,6 +451,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.POLYGON),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.POLYGON)
         ),
     },
@@ -453,6 +467,8 @@ export const chainProtocols = [
             true,
             getV4TrackedEthThreshold(ChainId.UNICHAIN),
             v4UntrackedUsdThreshold,
+            undefined,
+            undefined,
             v4SubgraphUrlOverride(ChainId.UNICHAIN)
         ),
     },
