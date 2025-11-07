@@ -44,9 +44,10 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
   const provider = chainProtocols.find(
     (element) => element.protocol == protocol && element.chainId == chainId
   )!.provider
-  const eulerHooksProvider = chainProtocols.find(
+  const chainProtocol = chainProtocols.find(
     (element) => element.protocol == protocol && element.chainId == chainId
-  )?.eulerHooksProvider
+  ) as any
+  const eulerHooksProvider = chainProtocol?.eulerHooksProvider
   const log: Logger = bunyan.createLogger({
     name: 'RoutingLambda',
     serializers: bunyan.stdSerializers,
@@ -301,7 +302,7 @@ const handler: ScheduledHandler = metricScope((metrics) => async (event: EventBr
           metric.putMetric('eulerHooks.length', eulerHooks.length)
 
           const eulerPools = await Promise.all(
-            eulerHooks.map(async (eulerHook) => {
+            eulerHooks.map(async (eulerHook: any) => {
               const pool = await eulerHooksProvider?.getPoolByHook(eulerHook.hook)
               log.info(`eulerHooks pool ${JSON.stringify(pool)}`)
 
