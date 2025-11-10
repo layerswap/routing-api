@@ -54,18 +54,6 @@ export const ZORA_HOOKS_FOR_V4_SUBGRAPH_FILTERING = new Set([
 // process.env.ALCHEMY_QUERY_KEY = ''
 // process.env.ALCHEMY_QUERY_KEY_2 = ''
 
-// The Graph Gateway requires bearer token authentication
-// Add this header to your subgraph requests
-export const theGraphHeaders = () => {
-    const apiKey = process.env.THEGRAPH_API_KEY
-    if (!apiKey) {
-        throw new Error('THEGRAPH_API_KEY environment variable is not set')
-    }
-    return {
-        Authorization: `Bearer ${apiKey}`,
-    }
-}
-
 export const v4SubgraphUrlOverride = (chainId: ChainId) => {
     switch (chainId) {
         case ChainId.MAINNET:
@@ -89,49 +77,49 @@ export const v4SubgraphUrlOverride = (chainId: ChainId) => {
     }
 }
 
-/* ---------- V3: keep your The Graph gateway IDs ---------- */
 export const v3SubgraphUrlOverride = (chainId: ChainId) => {
+    const apiKey = process.env.THEGRAPH_API_KEY || ''
     switch (chainId) {
         case ChainId.MAINNET:
-            return `https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV`
         case ChainId.ARBITRUM_ONE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/3V7ZY6muhxaQL5qvntX1CFXJ32W7BxXZTGTwmpH5J4t3`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/3V7ZY6muhxaQL5qvntX1CFXJ32W7BxXZTGTwmpH5J4t3`
         case ChainId.POLYGON:
-            return `https://gateway.thegraph.com/api/subgraphs/id/3hCPRGf4z88VC5rsBKU5AA9FBBq5nF3jbKJG7VZCbhjm`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/3hCPRGf4z88VC5rsBKU5AA9FBBq5nF3jbKJG7VZCbhjm`
         case ChainId.OPTIMISM:
-            return `https://gateway.thegraph.com/api/subgraphs/id/Cghf4LfVqPiFw6fp6Y5X5Ubc8UpmUhSfJL82zwiBFLaj`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/Cghf4LfVqPiFw6fp6Y5X5Ubc8UpmUhSfJL82zwiBFLaj`
         case ChainId.AVALANCHE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/GVH9h9KZ9CqheUEL93qMbq7QwgoBu32QXQDPR6bev4Eo`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/GVH9h9KZ9CqheUEL93qMbq7QwgoBu32QXQDPR6bev4Eo`
         case ChainId.BNB:
-            return `https://gateway.thegraph.com/api/subgraphs/id/G5MUbSBM7Nsrm9tH2tGQUiAF4SZDGf2qeo1xPLYjKr7K`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/G5MUbSBM7Nsrm9tH2tGQUiAF4SZDGf2qeo1xPLYjKr7K`
         case ChainId.BASE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/43Hwfi3dJSoGpyas9VwNoDAv55yjgGrPpNSmbQZArzMG`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/43Hwfi3dJSoGpyas9VwNoDAv55yjgGrPpNSmbQZArzMG`
         case ChainId.UNICHAIN:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         default:
             return undefined
     }
 }
 
-/* ---------- V2: keep your The Graph gateway IDs ---------- */
 export const v2SubgraphUrlOverride = (chainId: ChainId) => {
+    const apiKey = process.env.THEGRAPH_API_KEY || ''
     switch (chainId) {
         case ChainId.MAINNET:
-            return `https://gateway.thegraph.com/api/subgraphs/id/EYCKATKGBKLWvSfwvBjzfCBmGwYNdVkduYXVivCsLRFu`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/EYCKATKGBKLWvSfwvBjzfCBmGwYNdVkduYXVivCsLRFu`
         case ChainId.ARBITRUM_ONE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/CStW6CSQbHoXsgKuVCrk3uShGA4JX3CAzzv2x9zaGf8w`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/CStW6CSQbHoXsgKuVCrk3uShGA4JX3CAzzv2x9zaGf8w`
         case ChainId.POLYGON:
-            return `https://gateway.thegraph.com/api/subgraphs/id/EXBcAqmvQi6VAnE9X4MNK83LPeA6c1PsGskffbmThoeK`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/EXBcAqmvQi6VAnE9X4MNK83LPeA6c1PsGskffbmThoeK`
         case ChainId.OPTIMISM:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.AVALANCHE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/SUBGRAPH_ID_PLACEHOLDER`
         case ChainId.BNB:
-            return `https://gateway.thegraph.com/api/subgraphs/id/8EjCaWZumyAfN3wyB4QnibeeXaYS8i4sp1PiWT91AGrt`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/8EjCaWZumyAfN3wyB4QnibeeXaYS8i4sp1PiWT91AGrt`
         case ChainId.BASE:
-            return `https://gateway.thegraph.com/api/subgraphs/id/4jGhpKjW4prWoyt5Bwk1ZHUwdEmNWveJcjEyjoTZWCY9`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/4jGhpKjW4prWoyt5Bwk1ZHUwdEmNWveJcjEyjoTZWCY9`
         case ChainId.UNICHAIN:
-            return `https://gateway.thegraph.com/api/subgraphs/id/24MxHbKk2pzAbpGVwfe2mYZmdsUUBiLnw9g9JAYZsgD3`
+            return `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/24MxHbKk2pzAbpGVwfe2mYZmdsUUBiLnw9g9JAYZsgD3`
         default:
             return undefined
     }
