@@ -70,6 +70,8 @@ export class RoutingAPIStack extends cdk.Stack {
       uniGraphQLEndpoint: string
       uniGraphQLHeaderOrigin: string
       resourceNamePrefix?: string // Optional prefix for resource names (e.g., 'DEV-'). If empty/undefined, names are auto-generated
+      goldskyBearerToken?: string
+      goldskyApiKey?: string
     }
   ) {
     super(parent, name, props)
@@ -98,6 +100,8 @@ export class RoutingAPIStack extends cdk.Stack {
       theGraphApiKey,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
+      goldskyBearerToken,
+      goldskyApiKey,
       resourceNamePrefix,
     } = props
 
@@ -122,6 +126,8 @@ export class RoutingAPIStack extends cdk.Stack {
       resourceNamePrefix,
       graphBaseV4SubgraphId,
       graphBearerToken,
+      goldskyBearerToken,
+      goldskyApiKey,
     })
 
     const {

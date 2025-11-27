@@ -103,7 +103,7 @@ export const SUPPORTED_CHAINS: ChainId[] = [
     ChainId.POLYGON,
     ChainId.UNICHAIN
 ]
-const DEFAULT_TOKEN_LIST = 'https://tokens.uniswap.org'
+const DEFAULT_TOKEN_LIST = 'https://gateway.ipfs.io/ipns/tokens.uniswap.org'
 
 export interface RequestInjected<Router> extends BaseRInj {
   chainId: ChainId
@@ -450,6 +450,7 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
               ChainId.WORLDCHAIN,
               ChainId.UNICHAIN,
               ChainId.SONEIUM,
+              ChainId.MONAD,
             ]
           )
 

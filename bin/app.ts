@@ -44,6 +44,8 @@ export class RoutingAPIStage extends Stage {
       theGraphApiKey?: string
       uniGraphQLEndpoint: string
       uniGraphQLHeaderOrigin: string
+      goldskyBearerToken?: string
+      goldskyApiKey?: string
     }
   ) {
     super(scope, id, props)
@@ -70,6 +72,8 @@ export class RoutingAPIStage extends Stage {
       graphBearerToken,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
+      goldskyBearerToken,
+      goldskyApiKey,
     } = props
 
     const { url } = new RoutingAPIStack(this, 'RoutingAPI', {
@@ -95,6 +99,8 @@ export class RoutingAPIStage extends Stage {
       graphBearerToken,
       uniGraphQLEndpoint,
       uniGraphQLHeaderOrigin,
+      goldskyBearerToken,
+      goldskyApiKey,
     })
     this.url = url
   }
@@ -296,6 +302,8 @@ export class RoutingAPIPipeline extends Stack {
       graphBaseV4SubgraphId: alchemySubgraphSecret.secretValueFromJson('alchemy-base-v4-subgraph-id').toString(),
       uniGraphQLEndpoint: routingApiNewSecrets.secretValueFromJson('uni-graphql-endpoint').toString(),
       uniGraphQLHeaderOrigin: routingApiNewSecrets.secretValueFromJson('uni-graphql-header-origin').toString(),
+      goldskyBearerToken: routingApiNewSecrets.secretValueFromJson('GOLDSKY_BEARER_TOKEN').toString(),
+      goldskyApiKey: routingApiNewSecrets.secretValueFromJson('GOLDSKY_API_KEY').toString(),
     })
 
     const betaUsEast2AppStage = pipeline.addStage(betaUsEast2Stage)
@@ -329,6 +337,8 @@ export class RoutingAPIPipeline extends Stack {
       graphBaseV4SubgraphId: alchemySubgraphSecret.secretValueFromJson('alchemy-base-v4-subgraph-id').toString(),
       uniGraphQLEndpoint: routingApiNewSecrets.secretValueFromJson('uni-graphql-endpoint').toString(),
       uniGraphQLHeaderOrigin: routingApiNewSecrets.secretValueFromJson('uni-graphql-header-origin').toString(),
+      goldskyBearerToken: routingApiNewSecrets.secretValueFromJson('GOLDSKY_BEARER_TOKEN').toString(),
+      goldskyApiKey: routingApiNewSecrets.secretValueFromJson('GOLDSKY_API_KEY').toString(),
     })
 
     const prodUsEast2AppStage = pipeline.addStage(prodUsEast2Stage)
@@ -389,7 +399,6 @@ export class RoutingAPIPipeline extends Stack {
 
 const app = new cdk.App()
 
-
 const jsonRpcProviders = {
     WEB3_RPC_1: process.env.WEB3_RPC_1!,
     ALCHEMY_1: process.env.ALCHEMY_1!,
@@ -432,6 +441,10 @@ new RoutingAPIStack(app, 'RoutingAPIStack', {
   uniGraphQLHeaderOrigin: process.env.GQL_H_ORGN!,
   alchemyQueryKey: process.env.ALCHEMY_QUERY_KEY!,
   alchemyQueryKey2: process.env.ALCHEMY_QUERY_KEY_2!,
+  graphBaseV4SubgraphId: process.env.GRAPH_BASE_V4_SUBGRAPH_ID!,
+  graphBearerToken: process.env.GRAPH_BEARER_TOKEN!,
+  goldskyBearerToken: process.env.GOLDSKY_BEARER_TOKEN!,
+  goldskyApiKey: process.env.GOLDSKY_API_KEY!,
   theGraphApiKey: process.env.THEGRAPH_API_KEY!,
 })
 

@@ -2,22 +2,22 @@ import { Protocol } from '@uniswap/router-sdk'
 import { V2SubgraphProvider, V3SubgraphProvider, V4SubgraphProvider } from '@uniswap/smart-order-router'
 import { ChainId } from '@uniswap/sdk-core'
 import {
-  ZORA_CREATOR_HOOK_ON_BASE_v1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_0_0_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_1_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_2,
-  ZORA_CREATOR_HOOK_ON_BASE_v2_2,
-  ZORA_CREATOR_HOOK_ON_BASE_v2_2_1,
-  ZORA_POST_HOOK_ON_BASE_v1,
-  ZORA_POST_HOOK_ON_BASE_v1_0_0_1,
-  ZORA_POST_HOOK_ON_BASE_v1_0_0_2,
-  ZORA_POST_HOOK_ON_BASE_v1_1_1,
-  ZORA_POST_HOOK_ON_BASE_v1_1_1_1,
-  ZORA_POST_HOOK_ON_BASE_v1_1_2,
-  ZORA_POST_HOOK_ON_BASE_v2_2,
-  ZORA_POST_HOOK_ON_BASE_v2_2_1,
-  ZORA_POST_HOOK_ON_BASE_v2_3_0,
+    ZORA_CREATOR_HOOK_ON_BASE_v1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_0_0_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_1_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_2,
+    ZORA_CREATOR_HOOK_ON_BASE_v2_2,
+    ZORA_CREATOR_HOOK_ON_BASE_v2_2_1,
+    ZORA_POST_HOOK_ON_BASE_v1,
+    ZORA_POST_HOOK_ON_BASE_v1_0_0_1,
+    ZORA_POST_HOOK_ON_BASE_v1_0_0_2,
+    ZORA_POST_HOOK_ON_BASE_v1_1_1,
+    ZORA_POST_HOOK_ON_BASE_v1_1_1_1,
+    ZORA_POST_HOOK_ON_BASE_v1_1_2,
+    ZORA_POST_HOOK_ON_BASE_v2_2,
+    ZORA_POST_HOOK_ON_BASE_v2_2_1,
+    ZORA_POST_HOOK_ON_BASE_v2_3_0,
 } from '../util/hooksAddressesAllowlist'
 
 // during local cdk stack update, the env vars are not populated
@@ -31,22 +31,22 @@ import {
 
 // Zora hooks addresses for V4 filtering - MUST be lowercase
 export const ZORA_HOOKS_FOR_V4_SUBGRAPH_FILTERING = new Set([
-  ZORA_CREATOR_HOOK_ON_BASE_v1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_0_0_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_1_1,
-  ZORA_CREATOR_HOOK_ON_BASE_v1_1_2,
-  ZORA_CREATOR_HOOK_ON_BASE_v2_2,
-  ZORA_CREATOR_HOOK_ON_BASE_v2_2_1,
-  ZORA_POST_HOOK_ON_BASE_v1,
-  ZORA_POST_HOOK_ON_BASE_v1_0_0_1,
-  ZORA_POST_HOOK_ON_BASE_v1_0_0_2,
-  ZORA_POST_HOOK_ON_BASE_v1_1_1,
-  ZORA_POST_HOOK_ON_BASE_v1_1_1_1,
-  ZORA_POST_HOOK_ON_BASE_v1_1_2,
-  ZORA_POST_HOOK_ON_BASE_v2_2,
-  ZORA_POST_HOOK_ON_BASE_v2_2_1,
-  ZORA_POST_HOOK_ON_BASE_v2_3_0,
+    ZORA_CREATOR_HOOK_ON_BASE_v1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_0_0_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_1_1,
+    ZORA_CREATOR_HOOK_ON_BASE_v1_1_2,
+    ZORA_CREATOR_HOOK_ON_BASE_v2_2,
+    ZORA_CREATOR_HOOK_ON_BASE_v2_2_1,
+    ZORA_POST_HOOK_ON_BASE_v1,
+    ZORA_POST_HOOK_ON_BASE_v1_0_0_1,
+    ZORA_POST_HOOK_ON_BASE_v1_0_0_2,
+    ZORA_POST_HOOK_ON_BASE_v1_1_1,
+    ZORA_POST_HOOK_ON_BASE_v1_1_1_1,
+    ZORA_POST_HOOK_ON_BASE_v1_1_2,
+    ZORA_POST_HOOK_ON_BASE_v2_2,
+    ZORA_POST_HOOK_ON_BASE_v2_2_1,
+    ZORA_POST_HOOK_ON_BASE_v2_3_0,
 ])
 
 // during local cdk stack update, the env vars are not populated
@@ -136,7 +136,7 @@ const getV4TrackedEthThreshold = (chainId: ChainId) =>
 
 const v4UntrackedUsdThreshold = 0
 const v3UntrackedUsdThreshold = 25_000
-const v4BaseZoraTrackedEthThreshold = 0.001 
+const v4BaseZoraTrackedEthThreshold = 0.001
 const v2UntrackedUsdThreshold = Number.MAX_VALUE
 
 export const v3TrackedEthThreshold = 0.01 // still export a default if other code imports it
