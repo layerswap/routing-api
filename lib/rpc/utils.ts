@@ -65,7 +65,7 @@ export function generateProviderUrl(key: string, value: string): string {
     case 'ALCHEMY_130': {
       return `https://unichain-mainnet.g.alchemy.com/v2/${value}`
     }
-    case 'ALCHEMY_134': {
+    case 'ALCHEMY_143': {
       return `https://monad-mainnet.g.alchemy.com/v2/${value}`
     }
   }
