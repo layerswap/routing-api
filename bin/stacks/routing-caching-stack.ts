@@ -50,7 +50,7 @@ export class RoutingCachingStack extends cdk.NestedStack {
   constructor(scope: Construct, name: string, props: RoutingCachingStackProps) {
     super(scope, name, props)
 
-    const { alchemyQueryKey, alchemyQueryKey2, graphBaseV4SubgraphId, graphBearerToken, theGraphApiKey } = props
+    const { alchemyQueryKey, alchemyQueryKey2, graphBaseV4SubgraphId, graphBearerToken, theGraphApiKey, goldskyApiKey, goldskyBearerToken } = props
     // Note: resourceNamePrefix is not used in this stack as S3 buckets use auto-generated names
 
     this.alchemyQueryKey = alchemyQueryKey
