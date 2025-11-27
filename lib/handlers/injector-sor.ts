@@ -1,97 +1,97 @@
-import { ChainId, Token } from '@uniswap/sdk-core'
+import {ChainId, Token} from '@uniswap/sdk-core'
 import {
-  CachingGasStationProvider,
-  CachingTokenListProvider,
-  CachingTokenProviderWithFallback,
-  CachingV2PoolProvider,
-  CachingV3PoolProvider,
-  CachingV4PoolProvider,
-  EIP1559GasPriceProvider,
-  EthEstimateGasSimulator,
-  FallbackTenderlySimulator,
-  getApplicableV4FeesTickspacingsHooks,
-  IGasPriceProvider,
-  IMetric,
-  IOnChainQuoteProvider,
-  IRouteCachingProvider,
-  ITokenListProvider,
-  ITokenPropertiesProvider,
-  ITokenProvider,
-  IV2PoolProvider,
-  IV2SubgraphProvider,
-  IV3PoolProvider,
-  IV3SubgraphProvider,
-  IV4PoolProvider,
-  IV4SubgraphProvider,
-  LegacyGasPriceProvider,
-  MIXED_ROUTE_QUOTER_V1_ADDRESSES,
-  MIXED_ROUTE_QUOTER_V2_ADDRESSES,
-  NEW_QUOTER_V2_ADDRESSES,
-  NodeJSCache,
-  OnChainGasPriceProvider,
-  OnChainQuoteProvider,
-  PROTOCOL_V4_QUOTER_ADDRESSES,
-  QUOTER_V2_ADDRESSES,
-  setGlobalLogger,
-  Simulator,
-  StaticV2SubgraphProvider,
-  StaticV3SubgraphProvider,
-  StaticV4SubgraphProvider,
-  TenderlySimulator,
-  TokenPropertiesProvider,
-  TokenProvider,
-  TokenValidatorProvider,
-  UniswapMulticallProvider,
-  V2PoolProvider,
-  V2QuoteProvider,
-  V3PoolProvider,
-  V4PoolProvider,
+    CachingGasStationProvider,
+    CachingTokenListProvider,
+    CachingTokenProviderWithFallback,
+    CachingV2PoolProvider,
+    CachingV3PoolProvider,
+    CachingV4PoolProvider,
+    EIP1559GasPriceProvider,
+    EthEstimateGasSimulator,
+    FallbackTenderlySimulator,
+    getApplicableV4FeesTickspacingsHooks,
+    IGasPriceProvider,
+    IMetric,
+    IOnChainQuoteProvider,
+    IRouteCachingProvider,
+    ITokenListProvider,
+    ITokenPropertiesProvider,
+    ITokenProvider,
+    IV2PoolProvider,
+    IV2SubgraphProvider,
+    IV3PoolProvider,
+    IV3SubgraphProvider,
+    IV4PoolProvider,
+    IV4SubgraphProvider,
+    LegacyGasPriceProvider,
+    MIXED_ROUTE_QUOTER_V1_ADDRESSES,
+    MIXED_ROUTE_QUOTER_V2_ADDRESSES,
+    NEW_QUOTER_V2_ADDRESSES,
+    NodeJSCache,
+    OnChainGasPriceProvider,
+    OnChainQuoteProvider,
+    PROTOCOL_V4_QUOTER_ADDRESSES,
+    QUOTER_V2_ADDRESSES,
+    setGlobalLogger,
+    Simulator,
+    StaticV2SubgraphProvider,
+    StaticV3SubgraphProvider,
+    StaticV4SubgraphProvider,
+    TenderlySimulator,
+    TokenPropertiesProvider,
+    TokenProvider,
+    TokenValidatorProvider,
+    UniswapMulticallProvider,
+    V2PoolProvider,
+    V2QuoteProvider,
+    V3PoolProvider,
+    V4PoolProvider,
 } from '@uniswap/smart-order-router'
-import { TokenList } from '@uniswap/token-lists'
-import { default as bunyan, default as Logger } from 'bunyan'
+import {TokenList} from '@uniswap/token-lists'
+import {default as bunyan, default as Logger} from 'bunyan'
 import _ from 'lodash'
 import NodeCache from 'node-cache'
 import UNSUPPORTED_TOKEN_LIST from './../config/unsupported.tokenlist.json'
-import { BaseRInj, Injector } from './handler'
+import {BaseRInj, Injector} from './handler'
 import {
-  V2AWSSubgraphProvider,
-  V3AWSSubgraphProvider,
-  V4AWSSubgraphProvider,
+    V2AWSSubgraphProvider,
+    V3AWSSubgraphProvider,
+    V4AWSSubgraphProvider,
 } from './router-entities/aws-subgraph-provider'
-import { AWSTokenListProvider } from './router-entities/aws-token-list-provider'
-import { DynamoRouteCachingProvider } from './router-entities/route-caching/dynamo-route-caching-provider'
-import { DynamoDBCachingV3PoolProvider } from './pools/pool-caching/v3/dynamo-caching-pool-provider'
-import { TrafficSwitchV3PoolProvider } from './pools/provider-migration/v3/traffic-switch-v3-pool-provider'
-import { DefaultEVMClient } from './evm/EVMClient'
-import { InstrumentedEVMProvider } from './evm/provider/InstrumentedEVMProvider'
-import { deriveProviderName } from './evm/provider/ProviderName'
-import { V2DynamoCache } from './pools/pool-caching/v2/v2-dynamo-cache'
-import { OnChainTokenFeeFetcher } from '@uniswap/smart-order-router/build/main/providers/token-fee-fetcher'
-import { PortionProvider } from '@uniswap/smart-order-router/build/main/providers/portion-provider'
-import { GlobalRpcProviders } from '../rpc/GlobalRpcProviders'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { TrafficSwitchOnChainQuoteProvider } from './quote/provider-migration/traffic-switch-on-chain-quote-provider'
+import {AWSTokenListProvider} from './router-entities/aws-token-list-provider'
+import {DynamoRouteCachingProvider} from './router-entities/route-caching/dynamo-route-caching-provider'
+import {DynamoDBCachingV3PoolProvider} from './pools/pool-caching/v3/dynamo-caching-pool-provider'
+import {TrafficSwitchV3PoolProvider} from './pools/provider-migration/v3/traffic-switch-v3-pool-provider'
+import {DefaultEVMClient} from './evm/EVMClient'
+import {InstrumentedEVMProvider} from './evm/provider/InstrumentedEVMProvider'
+import {deriveProviderName} from './evm/provider/ProviderName'
+import {V2DynamoCache} from './pools/pool-caching/v2/v2-dynamo-cache'
+import {OnChainTokenFeeFetcher} from '@uniswap/smart-order-router/build/main/providers/token-fee-fetcher'
+import {PortionProvider} from '@uniswap/smart-order-router/build/main/providers/portion-provider'
+import {GlobalRpcProviders} from '../rpc/GlobalRpcProviders'
+import {StaticJsonRpcProvider} from '@ethersproject/providers'
+import {TrafficSwitchOnChainQuoteProvider} from './quote/provider-migration/traffic-switch-on-chain-quote-provider'
 import {
-  BLOCK_NUMBER_CONFIGS,
-  GAS_ERROR_FAILURE_OVERRIDES,
-  NON_OPTIMISTIC_CACHED_ROUTES_BATCH_PARAMS,
-  OPTIMISTIC_CACHED_ROUTES_BATCH_PARAMS,
-  RETRY_OPTIONS,
-  SUCCESS_RATE_FAILURE_OVERRIDES,
+    BLOCK_NUMBER_CONFIGS,
+    GAS_ERROR_FAILURE_OVERRIDES,
+    NON_OPTIMISTIC_CACHED_ROUTES_BATCH_PARAMS,
+    OPTIMISTIC_CACHED_ROUTES_BATCH_PARAMS,
+    RETRY_OPTIONS,
+    SUCCESS_RATE_FAILURE_OVERRIDES,
 } from '../util/onChainQuoteProviderConfigs'
-import { v4 } from 'uuid/index'
-import { chainProtocols } from '../cron/cache-config'
-import { Protocol } from '@uniswap/router-sdk'
-import { UniJsonRpcProvider } from '../rpc/UniJsonRpcProvider'
-import { GraphQLTokenFeeFetcher } from '../graphql/graphql-token-fee-fetcher'
-import { UniGraphQLProvider } from '../graphql/graphql-provider'
-import { TrafficSwitcherITokenFeeFetcher } from '../util/traffic-switch/traffic-switcher-i-token-fee-fetcher'
+import {v4} from 'uuid/index'
+import {chainProtocols} from '../cron/cache-config'
+import {Protocol} from '@uniswap/router-sdk'
+import {UniJsonRpcProvider} from '../rpc/UniJsonRpcProvider'
+import {GraphQLTokenFeeFetcher} from '../graphql/graphql-token-fee-fetcher'
+import {UniGraphQLProvider} from '../graphql/graphql-provider'
+import {TrafficSwitcherITokenFeeFetcher} from '../util/traffic-switch/traffic-switcher-i-token-fee-fetcher'
 import {
-  emptyV4FeeTickSpacingsHookAddresses,
-  EXTRA_V4_FEE_TICK_SPACINGS_HOOK_ADDRESSES,
+    emptyV4FeeTickSpacingsHookAddresses,
+    EXTRA_V4_FEE_TICK_SPACINGS_HOOK_ADDRESSES,
 } from '../util/extraV4FeeTiersTickSpacingsHookAddresses'
-import { NEW_CACHED_ROUTES_ROLLOUT_PERCENT } from '../util/newCachedRoutesRolloutPercent'
-import { TENDERLY_NEW_ENDPOINT_ROLLOUT_PERCENT } from '../util/tenderlyNewEndpointRolloutPercent'
+import {NEW_CACHED_ROUTES_ROLLOUT_PERCENT} from '../util/newCachedRoutesRolloutPercent'
+import {TENDERLY_NEW_ENDPOINT_ROLLOUT_PERCENT} from '../util/tenderlyNewEndpointRolloutPercent'
 
 export const SUPPORTED_CHAINS: ChainId[] = [
     ChainId.MAINNET,
@@ -101,9 +101,10 @@ export const SUPPORTED_CHAINS: ChainId[] = [
     ChainId.BNB,
     ChainId.AVALANCHE,
     ChainId.POLYGON,
-    ChainId.UNICHAIN
+    ChainId.UNICHAIN,
+    ChainId.MONAD
 ]
-const DEFAULT_TOKEN_LIST = 'https://gateway.ipfs.io/ipns/tokens.uniswap.org'
+const DEFAULT_TOKEN_LIST = 'https://tokens.uniswap.org'
 
 export interface RequestInjected<Router> extends BaseRInj {
   chainId: ChainId
@@ -355,6 +356,7 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
               case ChainId.BASE:
               case ChainId.POLYGON:
               case ChainId.UNICHAIN:
+              case ChainId.MONAD:    
               default:
               const currentQuoteProvider = new OnChainQuoteProvider(
                 chainId,
@@ -494,8 +496,6 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.ARBITRUM_ONE,
                 ChainId.BASE,
                 ChainId.POLYGON,
-                ChainId.OPTIMISM,
-                ChainId.AVALANCHE,
                 ChainId.BNB,
                 ChainId.UNICHAIN
             ]
@@ -508,7 +508,8 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.OPTIMISM,
                 ChainId.AVALANCHE,
                 ChainId.BNB,
-                ChainId.UNICHAIN
+                ChainId.UNICHAIN,
+                ChainId.MONAD
             ]
             const deleteCacheEnabledChains = [
                 ChainId.MAINNET,
@@ -518,7 +519,8 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.OPTIMISM,
                 ChainId.AVALANCHE,
                 ChainId.BNB,
-                ChainId.UNICHAIN
+                ChainId.UNICHAIN,
+                ChainId.MONAD
             ]
 
             const mixedSupported = [
@@ -529,7 +531,8 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.OPTIMISM,
                 ChainId.AVALANCHE,
                 ChainId.BNB,
-                ChainId.UNICHAIN
+                ChainId.UNICHAIN,
+                ChainId.MONAD
             ]
 
           const mixedCrossLiquidityV3AgainstV4Supported = [
@@ -540,7 +543,8 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.OPTIMISM,
                 ChainId.AVALANCHE,
                 ChainId.BNB,
-                ChainId.UNICHAIN
+                ChainId.UNICHAIN,
+                ChainId.MONAD
             ]
 
           const cachedRoutesCacheInvalidationFixRolloutPercentage = NEW_CACHED_ROUTES_ROLLOUT_PERCENT[chainId]
