@@ -536,17 +536,7 @@ export abstract class InjectorSOR<Router, QueryParams> extends Injector<
                 ChainId.MONAD
             ]
 
-          const mixedCrossLiquidityV3AgainstV4Supported = [
-                ChainId.MAINNET,
-                ChainId.ARBITRUM_ONE,
-                ChainId.BASE,
-                ChainId.POLYGON,
-                ChainId.OPTIMISM,
-                ChainId.AVALANCHE,
-                ChainId.BNB,
-                ChainId.UNICHAIN,
-                ChainId.MONAD
-            ]
+          const mixedCrossLiquidityV3AgainstV4Supported = [ChainId.BASE]
 
           const cachedRoutesCacheInvalidationFixRolloutPercentage = NEW_CACHED_ROUTES_ROLLOUT_PERCENT[chainId]
 
